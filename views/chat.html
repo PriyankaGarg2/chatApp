@@ -1,0 +1,39 @@
+<html>
+  <head>
+    <title>Socket.IO chat</title>
+    <link rel='stylesheet', href='/stylesheets/chat.css'>
+  </head>
+  <body>
+    <div id="chatBox">
+      <div id="msgList"><div id="msgText"></div></div>
+      <div id="msgBox">
+        <input id="message" autocomplete="off" /><button id="send">Send</button>
+      </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="http://code.jquery.com/jquery-1.11.1.js"></script>
+    <script>
+      var socket = io();
+    </script>
+
+    <script>
+
+      $('#send').click(function(){
+        var myMsg = $('#message').val()
+        socket.emit('message',$('#message').val());
+        $('#message').val('');
+        $('#msgText').append("<div id='mymsg'  class='clearfix'>"+myMsg+"</div><br><br>");
+        return false;
+      });
+
+
+      socket.on('receiveMsg',function(msg) {
+            $('#msgText').append("<div id='othermsg' class='clearfix'>"+msg+"</div><br><br>");
+      });
+
+      </script>
+
+  </body>
+
+</html>
