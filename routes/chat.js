@@ -1,9 +1,13 @@
 var express = require('express');
 var router = express.Router();
 
-/* GET users listing. */
 router.get('/', function(req, res, next) {
-   res.render('chat', { title: 'chat application' });
+  res.render('chat', { title: 'chat' });
 });
 
-module.exports = router;
+router.get('/user',function(req,res,next){
+ var name = req.query.name;
+ res.render('chat', { title: 'chat' });
+});
+
+module.exports=router;

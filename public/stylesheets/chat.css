@@ -10,7 +10,13 @@ body {
   padding: 3px;
   position: fixed;
   bottom: 0;
-  width: 100%;
+  width: 80%;
+}
+#onlineUsers{
+  width: 20%;
+  float: right;
+  height: 100%;
+  background-color:#f2f2f2;
 }
 input {
   border:1;

@@ -10,7 +10,8 @@
         <input id="message" autocomplete="off" /><button id="send">Send</button>
       </div>
     </div>
-
+    <div id="onlineUsers">
+    </div>
     <script src="/socket.io/socket.io.js"></script>
     <script src="http://code.jquery.com/jquery-1.11.1.js"></script>
     <script>
@@ -18,6 +19,8 @@
     </script>
 
     <script>
+      var username = window.location.search.replace('?', '').split('=')[1];
+      socket.emit('logged',username);
 
       $('#send').click(function(){
         var myMsg = $('#message').val()
@@ -31,6 +34,15 @@
       socket.on('receiveMsg',function(msg) {
             $('#msgText').append("<div id='othermsg' class='clearfix'>"+msg+"</div><br><br>");
       });
+
+      socket.on('logarr',function(msg){
+        //console.log(msg+"arr");
+       var list = $('#onlineUsers');
+       list.empty();
+       msg.forEach(function(el){
+           list.append( el + '<br>');
+       });
+     });
 
       </script>
 
