@@ -5,7 +5,12 @@ module.exports=function(ioConn) {
 
     socket.on('disconnect', function(){
       var name=socket.name;
-      arr.splice((arr.indexOf(name)),1);
+      for(var i=0;i<arr.length;i++){
+        if(arr[i].name==name){
+          break;
+        }
+      }
+      arr.splice(i,1);
       //socket.emit('logarr',arr);
       console.log("User disconnected");
     });
@@ -17,8 +22,18 @@ module.exports=function(ioConn) {
 
     //online users
     socket.on('logged',function(username){
-      if(arr.indexOf(username)<0){
-        arr.push(username);
+      var f=0;
+      for(var i=0;i<arr.length;i++){
+        if(arr[i].name==username){
+          f=1;
+          break;
+        }
+      }
+      if(f==0){
+        var obj={}
+        obj.name=username;
+        obj.id=socket.id;
+        arr.push(obj);
         socket.name=username;
       }
       socket.emit('logarr',arr);
