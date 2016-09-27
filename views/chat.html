@@ -4,16 +4,39 @@
     <link rel='stylesheet', href='/stylesheets/chat.css'>
   </head>
   <body>
-    <div id="chatBox">
-      <div id="msgList"><div id="msgText"></div></div>
-      <div id="msgBox">
-        <input id="message" autocomplete="off" /><button id="send">Send</button>
+
+    <!-- modal starts here -->
+      <div id="requestModal" class="modal fade" role="dialog">
+        <div class="modal-dialog">
+
+          <!-- Modal content-->
+          <div class="modal-content">
+            <div class="modal-header">
+              <button type="button" class="close" data-dismiss="modal">&times;</button>
+              <h4 class="modal-title">Request for chat</h4>
+            </div>
+            <div class="modal-body">
+              <text id="sender"></text><p> is requesting a chat. </p>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-default" id="accept">Accept</button>
+              <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+            </div>
+          </div>
+
+        </div>
       </div>
+      <!-- modal ends here -->
+
+    <div id="chatBox">
     </div>
     <div id="onlineUsers">
     </div>
     <script src="/socket.io/socket.io.js"></script>
     <script src="http://code.jquery.com/jquery-1.11.1.js"></script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
     <script>
       var socket = io();
     </script>
@@ -22,27 +45,86 @@
       var username = window.location.search.replace('?', '').split('=')[1];
       socket.emit('logged',username);
 
-      $('#send').click(function(){
-        var myMsg = $('#message').val()
-        socket.emit('message',$('#message').val());
-        $('#message').val('');
-        $('#msgText').append("<div id='mymsg'  class='clearfix'>"+myMsg+"</div><br><br>");
-        return false;
-      });
+
+      //sending message
+      $('#chatBox').on('click','.sendingMsg',function(event){
+      var myMsg = $('#message').val();
+      if(myMsg != ""){
+          var sendTo = $('#send').attr('sendId');
+          //console.log("-------------"+myMsg);
+          socket.emit('message',{'message':$('#message').val() ,'sendTo':sendTo });
+          $('#message').val('');
+          $('#msgText').append("<div id='mymsg'>"+myMsg+"</div><br><br><br>");
+        }
+
+    });
 
 
       socket.on('receiveMsg',function(msg) {
-            $('#msgText').append("<div id='othermsg' class='clearfix'>"+msg+"</div><br><br>");
+            $('#msgText').append("<div id='othermsg'>"+msg+"</div><br><br>");
       });
 
+      //display online users
       socket.on('logarr',function(msg){
         //console.log(msg+"arr");
        var list = $('#onlineUsers');
        list.empty();
        msg.forEach(function(el){
-           list.append( el.name + '<br>');
+           list.append('<li class="log" sid='+el.id+' data-name='+el.name+'>'+ el.name + '</li>');
        });
      });
+
+     //delegation
+     $('#onlineUsers').on('click'
+                          ,'.log'
+                          ,function(event){
+                            var id=$(event.target).attr('sid');
+                            var name=$(event.target).attr('data-name');
+                            var sid1='/#'+socket.id;
+                            alert('Request sent');
+                            socket.emit('chat-start',{'receiverId':id,'senderId':sid1,'senderName':name});
+                          });
+
+      //receive request
+      socket.on('chatReq',function(msg){
+        $('#sender').append(msg.senderName);
+        $('#requestModal').modal('show');
+        $('#accept').attr("senderId",msg.senderId);
+        $('#accept').attr("receiverId",msg.receiverId);
+        //console.log("1111111111  "+msg.receiverId);
+      });
+
+      //accepting a request
+      $('#accept').click(function(){
+           socket.emit("acceptedRequest",
+           {
+             "senderId" : $(this).attr('senderId'),
+             "receiverId" : $(this).attr('receiverId')
+           });
+           //console.log("inside acceptedRequest.....corr"+$(this).attr('receiverId'));
+           createChatBox($(this).attr('senderId'));
+       });
+
+       //creating a chat area
+       function createChatBox(sendId){
+         $('#chatBox').html("");
+          var msgList = '<div id="msgList"><div id="msgText"></div></div>';
+          var msgBox = '<div id="msgBox" class="sendingMsg"><input id="message" autocomplete="off" /><button id="send" sendId='+sendId+'>Send</button></div>';
+          var typeSignal = '<div id="msgSignal"></div>';
+
+          $('#chatBox').append(msgList);
+          $('#chatBox').append(msgBox);
+          $('#chatBox').append(typeSignal);
+       }
+
+       //request accepted
+       socket.on("acceptedReq",function(msg){
+
+         //console.log("33333333"+msg.receiverId);
+         createChatBox(msg.receiverId);
+
+       });
+
 
       </script>
 
