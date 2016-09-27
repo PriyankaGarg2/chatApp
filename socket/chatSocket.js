@@ -1,3 +1,6 @@
+var ss=require('socket.io-stream');
+var path=require('path');
+var fs=require('fs');
 var chatMessages=require('../models/chatTable.js');
 var arr=[];
 
@@ -99,6 +102,15 @@ module.exports=function(ioConn) {
       //console.log("inside acceptedRequest2..cor "+ msg.receiverId);
       socket.to(msg.senderId).emit("acceptedReq",{"receiverId":msg.receiverId,"senderId":msg.senderId});
     });
+
+    //file uploading
+    ss(socket).on('file',function(stream,data){
+        var filename=path.basename(data.name);
+        stream.pipe(fs.createWriteStream(filename));
+        var msg='<a href= >'+data.name+'</a>';
+        socket.to(data.sender).emit('receiveMsg',msg);
+    });
+
   });
 }
 
