@@ -1,4 +1,7 @@
+var chatMessages=require('../models/chatTable.js');
 var arr=[];
+
+//connection
 module.exports=function(ioConn) {
   ioConn.on('connection' , function(socket){
     console.log("User connected");
@@ -21,6 +24,48 @@ module.exports=function(ioConn) {
     socket.on('message', function(msg){
       console.log('message: ' + msg);
       socket.to(msg.sendTo).emit('receiveMsg',msg.message);
+      var id1=msg.sendTo;
+      var id2=msg.rfrom;
+      var message=msg.message;
+      var n1=find(id1);
+      var n2=find(id2);
+      var cid=n1+n2;
+      var cid2=n2+n1;
+      var time=new Date().getTime();
+      var newChat=new chatMessages(
+                                    {chatId:cid,
+                                      userName1:n1,
+                                      userName2:n2,
+                                      chat:{"sender":n2,"msg":message,"time":time}
+                                    });
+
+      chatMessages.findOne({ 'chatId': {$in:[cid,cid2]}},function (err, users) {
+          if (err || users==null) {
+            //save
+              newChat.save(function (err,newUser){
+                  if(err) return console.log(err);
+                  else {
+
+                    console.log("saved");
+                  }
+              });
+          }//saved
+          else{
+            //update
+            var exisMsg = users.chat;
+            var newMsg = {"sender":n2 , "msg":message , "time":time};
+            exisMsg.push(newMsg);
+            users.save(function (err,newUser){
+                if(err) return console.log(err);
+                else {
+                  console.log("updated\n\n");
+                }
+            });
+
+          }//else
+        });
+
+
     });
 
     //online users-user gets connected
@@ -42,13 +87,11 @@ module.exports=function(ioConn) {
         socket.broadcast.emit('logarr',arr);
         socket.emit('logarr',arr);
       }
-
     });
 
     //receiving sender and receiver id
     socket.on('chat-start',function(msg){
       socket.to(msg.receiverId).emit('chatReq',{'senderId':msg.senderId,'senderName':msg.senderName,'receiverId':msg.receiverId});
-
     });
 
     //accept request
@@ -56,8 +99,12 @@ module.exports=function(ioConn) {
       //console.log("inside acceptedRequest2..cor "+ msg.receiverId);
       socket.to(msg.senderId).emit("acceptedReq",{"receiverId":msg.receiverId,"senderId":msg.senderId});
     });
-
-
   });
+}
 
+function find(id){
+  for(var i=0;i<arr.length;i++){
+    if(arr[i].id==id)
+      return arr[i].name;
+      }
 }

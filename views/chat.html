@@ -51,8 +51,10 @@
       var myMsg = $('#message').val();
       if(myMsg != ""){
           var sendTo = $('#send').attr('sendId');
+          var rfrom=$('#send').attr('rid');
           //console.log("-------------"+myMsg);
-          socket.emit('message',{'message':$('#message').val() ,'sendTo':sendTo });
+          /////////////////////start
+          socket.emit('message',{'message':$('#message').val() ,'sendTo':sendTo,'rfrom':rfrom });
           $('#message').val('');
           $('#msgText').append("<div id='mymsg'>"+myMsg+"</div><br><br><br>");
         }
@@ -84,7 +86,7 @@
                             alert('Request sent');
                             socket.emit('chat-start',{'receiverId':id,'senderId':sid1,'senderName':name});
                           });
-
+/////////////111111111111111111111message
       //receive request
       socket.on('chatReq',function(msg){
         $('#sender').append(msg.senderName);
@@ -101,15 +103,16 @@
              "senderId" : $(this).attr('senderId'),
              "receiverId" : $(this).attr('receiverId')
            });
-           //console.log("inside acceptedRequest.....corr"+$(this).attr('receiverId'));
-           createChatBox($(this).attr('senderId'));
+           //console.log("inside acceptedRequest.....corr"+$(this).attr('receiverId'));3333333333333
+           createChatBox($(this).attr('senderId'),$(this).attr('receiverId'));
        });
 
        //creating a chat area
-       function createChatBox(sendId){
+       /////////////////222222222222222
+       function createChatBox(sendId,rid){
          $('#chatBox').html("");
           var msgList = '<div id="msgList"><div id="msgText"></div></div>';
-          var msgBox = '<div id="msgBox" class="sendingMsg"><input id="message" autocomplete="off" /><button id="send" sendId='+sendId+'>Send</button></div>';
+          var msgBox = '<div id="msgBox" class="sendingMsg"><input id="message" autocomplete="off" /><button id="send" sendId='+sendId+' rid='+rid+'>Send</button></div>';
           var typeSignal = '<div id="msgSignal"></div>';
 
           $('#chatBox').append(msgList);
@@ -121,7 +124,8 @@
        socket.on("acceptedReq",function(msg){
 
          //console.log("33333333"+msg.receiverId);
-         createChatBox(msg.receiverId);
+         ////////////////44444444444444444
+         createChatBox(msg.receiverId,msg.senderId);
 
        });
 
