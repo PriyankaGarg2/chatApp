@@ -1,3 +1,5 @@
+var express = require('express');
+var router = express.Router();
 var ss=require('socket.io-stream');
 var path=require('path');
 var fs=require('fs');
@@ -106,10 +108,17 @@ module.exports=function(ioConn) {
     //file uploading
     ss(socket).on('file',function(stream,data){
         var filename=path.basename(data.name);
-        stream.pipe(fs.createWriteStream(filename));
-        var msg='<a href= >'+data.name+'</a>';
+        stream.pipe(fs.createWriteStream('public/uploads/'+filename));
+        var msg='<a href="/uploads/'+filename+'" >'+filename+'</a>';
         socket.to(data.sender).emit('receiveMsg',msg);
     });
+
+    // //download file
+    //  router.get('/download',function(req,res,next){
+    //    var file=req.params.file;
+    //    var path=__dirname +'/uploads'+file;
+    //    res.download(path);
+    //  });
 
   });
 }

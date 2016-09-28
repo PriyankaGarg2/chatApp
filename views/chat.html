@@ -164,12 +164,20 @@
          var file=e.target.files[0];
          var sender=$('#myFile').attr('senderId');
          var receiver=$('#myFile').attr('receiverId');
+         //progress bar
+         var blobStream=ss.createBlobReadStream(file);
+         var size=0;
+         blobStream.on('data',function(chunk){
+           size+=chunk.length;
+           console.log(Math.floor(size/file.size*100)+'%');
+         });
+
          //uploading file to server
          ss(socket).emit('file',stream,{size: file.size,name:file.name,sender:sender,receiver:receiver});
-         ss.createBlobReadStream(file).pipe(stream);
+         blobStream.pipe(stream);
 
          //appending
-         var msg='<a href= >'+file.name+'</a>';
+         var msg='<a href="/uploads/'+file.name+'" >'+file.name+'</a>';
          $('#msgText').append("<div id='mymsg'>"+msg+"</div><br><br><br>");
        });
 
